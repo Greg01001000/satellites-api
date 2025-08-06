@@ -4,6 +4,9 @@ Published: https://aesthetic-twilight-fedcbf.netlify.app/
 
 ## CS 81 Final Project - When to see satellites, by Greg H, 8/5/25
 
+### NOTE:
+Before I tried to publish the project as a working website, it worked on my local computer. To get it to work when published, I had to change configuration files, add a docs folder, and change the API call in SatellitesForm.jsx to a relative path through a proxy. So now it doesn't work on my local server (my computer), but it works on netlify URL shown above.
+
 ### Project summary
 This project uses JavaScript with React and Vite to provide a web app to allow users to find out when and where they can see certain famous satellites with the unaided eye.
 
