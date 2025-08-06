@@ -49,7 +49,7 @@ function SatellitesForm() {
                 locationName: locations[formData.location].city,
                 locationTimezone: locations[formData.location].timezone
             });
-            const response = await fetch(`/api/rest/v1/satellite/visualpasses/${formData.ID}/${formData.location}/10/1&apiKey=32EW6G-HQKPTB-54LMR3-5JKA`);
+            const response = await fetch(`https://api.n2yo.com/api/rest/v1/satellite/visualpasses/${formData.ID}/${formData.location}/10/1&apiKey=32EW6G-HQKPTB-54LMR3-5JKA`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
