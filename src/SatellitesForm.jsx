@@ -1,4 +1,6 @@
-// &api_key=32EW6G-HQKPTB-54LMR3-5JKA
+// https://github.com/Greg01001000/satellites-api
+// CS 81 Final Project - When to see satellites, by Greg H, 8/5/25
+// api_key=32EW6G-HQKPTB-54LMR3-5JKA
 
 import React, { useState } from 'react';
 import './SatellitesForm.css';
@@ -11,9 +13,10 @@ function SatellitesForm() {
     };
 
     const locations = {
+        '30.04/31.24/75': {city: 'Cairo, Egypt', timezone: 'Africa/Cairo'},
+        '28.61/77.23/216': {city: 'Delhi, India', timezone: 'Asia/Kolkata'},
         '34.019/-118.491/32': {city: 'Santa Monica, CA, USA', timezone: 'America/Los_Angeles'},
-        '35.68/139.77/40': {city: 'Tokyo, Japan', timezone: 'Asia/Tokyo'},
-        '28.61/77.23/216': {city: 'Delhi, India', timezone: 'Asia/Kolkata'}
+        '35.68/139.77/40': {city: 'Tokyo, Japan', timezone: 'Asia/Tokyo'}
     };
 
   const [formData, setFormData] = useState({ ID: '', location: '' });
@@ -30,7 +33,8 @@ function SatellitesForm() {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.ID.trim()) newErrors.ID = 'ID is required';
+    if (!formData.ID) newErrors.ID = 'Please choose a satellite';
+    if (!formData.location) newErrors.ID = 'Please choose a location';
     return newErrors;
   };
 
@@ -92,7 +96,7 @@ function SatellitesForm() {
         const seconds = totalSeconds % 60;
 
         return (
-        <div key={index} style={{ marginBottom: '15px', padding: '5px', backgroundColor: '#f0f0f0', borderRadius: '5px' }}>
+        <div key={index} style={{ maxWidth: '700px', padding: '5px', borderRadius: '5px', color: '#bbb', backgroundColor: '#111' }}>
             <p>
             The {selectedSatelliteName} can be visible in {selectedLocationName} on {formattedDate} starting 
             at {formattedTime} local time for about {minutes} minutes and {seconds} seconds.
@@ -141,7 +145,7 @@ function SatellitesForm() {
             {loading && <p>Loading...</p>}
             {error && <p>Error: {error}</p>}
             {!loading && Object.keys(resultData).length > 0 && (
-                <div style={{ maxWidth: '600px', padding: '5px', borderRadius: '5px', color: '#bbb', backgroundColor: '#111' }}>
+                <div style={{ maxWidth: '700px', padding: '5px', borderRadius: '5px', color: '#bbb', backgroundColor: '#111' }}>
                     {resultData.info && resultData.info.passescount === 0 ? (
                         <p>The {queryInfo.satelliteName} will not be visible in the next 10 days in {queryInfo.locationName}.</p>
                         ) : (
