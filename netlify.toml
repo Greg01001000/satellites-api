@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/n2yo-proxy/*"
+  to = "https://api.n2yo.com/rest/v1/satellite/:splat"
+  status = 200
+  force = true
