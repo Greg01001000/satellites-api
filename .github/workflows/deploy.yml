@@ -1,0 +1,391 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build
+      run: npm run build
+      
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: './dist'
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2
+Also, make sure your vite.config.js has the correct base path:
+
+javascript
+export default defineConfig({
+  plugins: [react()],
+  base: '/satellites-api/', // This should match your repo name exactly
+  // ... rest of your config
+})
+Try pushing this updated workflow and let me know if you still get errors!
+
+
+
+
+
+vite.config.js had the wrong base path. I corrected it in my local repo. Should I run npm build again, git add, git commit, git push? Can you tell me exactly which steps I should take now?
+
+Edit
+Yes, you need to rebuild since you changed the base path. Here are the exact steps:
+
+Step 1: Build with the corrected base path
+
+bash
+npm run build
+Step 2: Add, commit, and push your changes
+
+bash
+git add .
+git commit -m "Fix vite.config.js base path for GitHub Pages"
+git push
+Step 3: Wait and check
+
+Go to your GitHub repo → Actions tab
+You should see a new workflow run starting
+Wait for it to complete (should take 1-2 minutes)
+If successful, check your GitHub Pages URL: https://greg01001000.github.io/satellites-api/
+That's it! The updated workflow I provided should work better, and with the correct base path in vite.config.js, your app should load properly on GitHub Pages.
+
+Note: Your API calls won't work on GitHub Pages (since the proxy only works locally), but the form and UI should display correctly. You'll see the API proxy error, but that's expected for now.
+
+Let me know how the deployment goes!
+
+
+
+
+
+The push was rejected "because the remote contains work that you do not have locally", I think because I created .github/workflows/deploy.yml in GitHub and then deleted it. Everything I want to keep is in my local git repo. How do I get that merged to GitHub?
+
+Edit
+You have a few options to resolve this. The safest approach is to pull the remote changes first:
+
+Option 1: Pull and merge (safest)
+
+bash
+git pull origin main --allow-unrelated-histories
+git push
+Option 2: If that doesn't work, force pull
+
+bash
+git fetch origin
+git reset --hard origin/main
+Then you'll need to re-add your local changes:
+
+bash
+git add .
+git commit -m "Fix vite.config.js base path for GitHub Pages"
+git push
+Option 3: Force push (use carefully)
+
+bash
+git push --force-with-lease origin main
+I'd recommend Option 1 first. The --allow-unrelated-histories flag tells git to merge even though the histories don't match perfectly.
+
+What's happening: When you created and deleted files on GitHub directly, it created commits that your local repo doesn't know about. Git is protecting you from accidentally overwriting work.
+
+After the merge, your local changes should push successfully, and the workflow should run with your corrected vite.config.js!
+
+Let me know which option works for you.
+
+
+
+
+
+I entered
+git pull origin main --allow-unrelated-histories
+and got this message. What should I do?
+hint: You have divergent branches and need to specify how to reconcile them.
+hint: You can do so by running one of the following commands sometime before
+hint: your next pull:
+hint:
+hint:   git config pull.rebase false  # merge
+hint:   git config pull.rebase true   # rebase
+hint:   git config pull.ff only       # fast-forward only
+hint:
+hint: You can replace "git config" with "git config --global" to set a default
+hint: preference for all repositories. You can also pass --rebase, --no-rebase,
+hint: or --ff-only on the command line to override the configured default per
+hint: invocation.
+fatal: Need to specify how to reconcile divergent branches.
+
+Edit
+Git needs you to tell it how to handle the conflicting histories. Run this command to merge them:
+
+bash
+git config pull.rebase false
+Then try the pull again:
+
+bash
+git pull origin main --allow-unrelated-histories
+What this does:
+
+git config pull.rebase false tells git to use merge (not rebase) when pulling
+This creates a merge commit that combines both histories
+After the pull succeeds, you should be able to push your changes:
+
+bash
+git push
+Alternative single command: If you prefer, you can skip the config and just run:
+
+bash
+git pull origin main --allow-unrelated-histories --no-rebase
+This does the same thing in one command. Either way will resolve the divergent branches and let you push your vite.config.js fix!
+
+
+
+
+
+The merge seems to have worked, but git push brought this error:
+ ! [remote rejected] main -> main (refusing to allow a Personal Access Token to create or update workflow .github/workflows/deploy.yml without workflow scope)
+error: failed to push some refs to 'https://github.com/Greg01001000/satellites-api'
+
+Edit
+The issue is that during the merge, you pulled down the workflow file from GitHub, and now when you try to push, your Personal Access Token still doesn't have the workflow scope to modify it.
+
+Quick fix - exclude the workflow file from this push:
+
+bash
+git reset HEAD~1 .github/workflows/deploy.yml
+git commit --amend --no-edit
+git push
+This removes the workflow file from your commit while keeping your vite.config.js changes.
+
+Then update the workflow file directly on GitHub:
+
+Go to your repo on GitHub.com
+Navigate to .github/workflows/deploy.yml
+Click the edit button
+Replace the content with the updated workflow I provided earlier
+Commit directly on GitHub
+Alternative - update your token scope:
+
+Go to GitHub → Settings → Developer settings → Personal access tokens
+Find your token and click "Edit"
+Check the workflow scope
+Update token
+Then you can push normally
+I'd recommend the first approach since it gets your vite.config.js fix deployed immediately, and you can update the workflow through GitHub's web interface where token scopes don't matter.
+
+
+
+
+
+I entered those three git commands, but git push gave this error again:
+ ! [remote rejected] main -> main (refusing to allow a Personal Access Token to create or update workflow .github/workflows/deploy.yml without workflow scope)
+error: failed to push some refs to 'https://github.com/Greg01001000/satellites-api'
+
+Edit
+The workflow file is still in your commit history. Let's take a different approach - create a new commit that only includes your vite.config.js changes:
+
+Step 1: Check what files are different
+
+bash
+git status
+Step 2: Create a new commit with only your vite.config.js
+
+bash
+git reset --soft HEAD~1
+git reset HEAD .github/
+git add vite.config.js
+git commit -m "Fix vite.config.js base path for GitHub Pages"
+git push
+If that still doesn't work, let's see exactly what's in your commit:
+
+bash
+git show --name-only
+Alternative approach - force push without the workflow:
+
+bash
+git log --oneline -5
+Find a commit hash before the merge, then:
+
+bash
+git reset --hard <commit-hash-before-merge>
+git add vite.config.js
+git commit -m "Fix vite.config.js base path"
+git push --force-with-lease
+The issue is that the merge brought the workflow file into your local repo, and now git thinks you're trying to modify it. We need to get your changes pushed without touching that workflow file.
+
+Which approach would you like to try first?
+
+
+
+
+
+git status gave this response. What does it mean?
+On branch main
+Your branch is ahead of 'origin/main' by 3 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+modified:   .github/workflows/deploy.yml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Edit
+This means:
+
+Your local branch is 3 commits ahead of what's on GitHub
+You have unstaged changes to the workflow file (it was modified but not committed)
+Let's fix this by discarding the workflow changes and pushing only your other commits:
+
+Step 1: Discard the workflow file changes
+
+bash
+git restore .github/workflows/deploy.yml
+Step 2: Now try pushing
+
+bash
+git push
+What this does:
+
+git restore undoes the local changes to the workflow file, reverting it back to whatever version is in your last commit
+This should leave you with just your vite.config.js changes in the commit history
+Then you can push without git trying to modify the workflow file
+If this works, your vite.config.js fix will be on GitHub, and you can then edit the workflow file directly through GitHub's web interface (where token permissions don't matter).
+
+Let me know if the push succeeds this time!
+
+
+
+
+
+That gave the same message (I think):
+ ! [remote rejected] main -> main (refusing to allow a Personal Access Token to create or update workflow .github/workflows/deploy.yml without workflow scope)
+error: failed to push some refs to 'https://github.com/Greg01001000/satellites-api'
+
+Edit
+The workflow file is still in your commit history from the merge. Let's see exactly what commits you have:
+
+bash
+git log --oneline -5
+This will show your last 5 commits. Look for a commit from before you did the merge (probably something like "Initial commit" or your first commit message).
+
+Then let's reset to before the merge and just add your vite.config.js change:
+
+bash
+git reset --hard <commit-hash-of-your-last-commit-before-merge>
+git add vite.config.js
+git commit -m "Fix vite.config.js base path for GitHub Pages"
+git push --force-with-lease
+Replace <commit-hash-of-your-last-commit-before-merge> with the actual hash from the git log output.
+
+What this does:
+
+Throws away the problematic merge commits entirely
+Adds only your vite.config.js change
+Force pushes (safely) to overwrite the remote
+This should get your config fix to GitHub without any workflow file conflicts. Then you can update the workflow through GitHub's web interface.
+
+Can you run git log --oneline -5 and show me the output?
+
+
+
+
+
+That git commit command brought this response. Should I enter git push --force-with-lease?
+On branch main
+Your branch and 'origin/main' have diverged,
+and have 2 and 3 different commits each, respectively.
+
+nothing to commit, working tree clean
+
+Edit
+The message "nothing to commit, working tree clean" means git didn't create a new commit because there were no changes to commit. This suggests your vite.config.js changes might have been lost during the reset.
+
+Let's check what happened and fix it:
+
+Step 1: Check if your vite.config.js changes are still there
+
+bash
+git status
+cat vite.config.js
+Step 2: If the vite.config.js changes are missing, re-make them Edit your vite.config.js and make sure it has:
+
+javascript
+base: '/satellites-api/',
+Step 3: Then add and commit
+
+bash
+git add vite.config.js
+git commit -m "Fix vite.config.js base path for GitHub Pages"
+Step 4: Now force push
+
+bash
+git push --force-with-lease
+The git push --force-with-lease is safer than regular force push - it will only push if no one else has pushed changes to the remote branch since you last fetched.
+
+Can you check your vite.config.js file and confirm it still has the correct base path?
+
+
+
+
+
+vite.config.js in my local repo has the correct base path, but that file in my GitHub repo doesn't have the base path line at all.
+git push --force-with-lease brought this response:
+ ! [remote rejected] main -> main (refusing to allow a Personal Access Token to create or update workflow .github/workflows/deploy.yml without workflow scope)
+error: failed to push some refs to 'https://github.com/Greg01001000/satellites-api'
+
+Edit
+The workflow file is still causing issues. Let's take a completely different approach - update your token permissions so you can push normally:
+
+Update your Personal Access Token:
+
+Go to GitHub.com → Your profile photo (top right) → Settings
+Scroll down to "Developer settings" (bottom of left sidebar)
+Click "Personal access tokens" → "Tokens (classic)"
+Find your current token and click on it
+Click "Update token" or the edit/pencil icon
+In the scopes section, check the "workflow" checkbox
+Click "Update token" at the bottom
+Then try pushing again:
+
+bash
+git push --force-with-lease
+Alternative quick fix - delete the local workflow file entirely:
+
+bash
+rm -rf .github/
+git add .
+git commit -m "Remove workflow file, fix vite config base path"
+git push --force-with-lease
+Then you can recreate the workflow file directly on GitHub where token permissions don't matter.
+
+I'd recommend trying the token update first since it's the cleanest solution. The workflow scope just allows you to modify GitHub Actions workflow files - it's a common permission needed for deploying projects.
+
+
+
+
+
