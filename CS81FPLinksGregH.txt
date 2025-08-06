@@ -1,0 +1,3 @@
+GitHub Repo: https://github.com/Greg01001000/satellites-api
+
+Published: https://aesthetic-twilight-fedcbf.netlify.app/

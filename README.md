@@ -1,4 +1,7 @@
-https://github.com/Greg01001000/satellites-api
+GitHub Repo: https://github.com/Greg01001000/satellites-api
+
+Published: https://aesthetic-twilight-fedcbf.netlify.app/
+
 ## CS 81 Final Project - When to see satellites, by Greg H, 8/5/25
 
 ### Project summary
@@ -26,16 +29,9 @@ DOM manipulation: All elements displayed on the web page are defined by JSX code
 
 Component-based design: The form is a component called by App.jsx and uses state and props (UseState())
 
-Include interactivity (e.g., responding to user input, form processing, or game logic)
-Be deployed to the web (e.g., GitHub Pages, Netlify, or Vercel)
-Include a README file with:
-Project summary
-Key features and functionality
-Technologies used
-Instructions for use
-Optional but encouraged:
+Deployed to the web: Netlify
 
-Use React hooks (useState, useEffect)
-Add animations or visual effects (via CSS or Canvas API)
-Include form validation
 ### Instructions for use
+The app is published at https://aesthetic-twilight-fedcbf.netlify.app/
+
+Click to select a satellite and a viewing location, and click the "Query" button. Message(s) will appear telling you when that satellite can be visible in the next 10 days, using local time and date for the selected location. Repeat as desired.
